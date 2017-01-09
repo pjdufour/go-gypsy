@@ -21,7 +21,7 @@ import (
 	"os"
 )
 
-import "github.com/kylelemons/go-gypsy/yaml"
+import "github.com/pjdufour/go-gypsy/yaml"
 
 var (
 	file = flag.String("file", "config.yaml", "(Simple) YAML file to read")

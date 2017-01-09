@@ -239,24 +239,37 @@ func Child(root Node, spec string) (Node, error) {
 			}
 		default:
 			m, ok := n.(Map)
-			if !ok {
-				return nil, &NodeTypeMismatch{
-					Node:     n,
-					Expected: "yaml.Map",
-					Full:     spec,
-					Spec:     last,
-					Token:    tok,
+			if ok {
+				n, ok = m[tok[1:]]
+				if !ok {
+					return nil, &NodeNotFound{
+						Full: spec,
+						Spec: last + tok,
+					}
+				}
+				return recur(n, last+tok, remain)
+			} else {
+				s, ok := n.(List)
+				if ok {
+					if num, err := strconv.Atoi(tok[1:]); err == nil {
+						if num >= 0 && num < len(s) {
+							return recur(s[num], last+tok, remain)
+						}
+					}
+				} else {
+					return nil, &NodeTypeMismatch{
+						Node:     n,
+						Expected: "yaml.Map or yaml.List",
+						Full:     spec,
+						Spec:     last,
+						Token:    tok,
+					}
 				}
 			}
-
-			n, ok = m[tok[1:]]
-			if !ok {
-				return nil, &NodeNotFound{
-					Full: spec,
-					Spec: last + tok,
-				}
+			return nil, &NodeNotFound{
+				Full: spec,
+				Spec: last + tok,
 			}
-			return recur(n, last+tok, remain)
 		}
 	}
 	return recur(root, "", spec)
